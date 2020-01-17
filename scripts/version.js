@@ -1,6 +1,6 @@
 
 /* eslint-disable no-console */
-const { exec } = require('child_process');
+const { spawnSync } = require('child_process');
 const chalk = require('chalk');
 
 console.clear();
@@ -10,15 +10,6 @@ const { argv } = process;
 
 // Remove the two first parameters ('node' and 'script path')
 argv.splice(0, 2);
-
-// Handle error for npm version
-function errorHandler(error, _, stderr) {
-  if (error) {
-    console.log(chalk.red.underline('Error while bumping new version:'));
-    console.log(stderr);
-    process.exit();
-  }
-}
 
 // Check if there's only one argument
 if (argv.length > 1) {
@@ -42,31 +33,45 @@ if (args.includes((arg) => arg.includes(argument))) {
 }
 
 // Check if the directory has non-committed changes
-let isClean = false;
-exec('git status --porcelain', (_, stdout) => {
-  const gitStatus = stdout.split('\n');
-  gitStatus.pop();
-  if (gitStatus.length > 0) {
-    isClean = false;
-    console.log(chalk.red.underline('Please, commit all changes before bumping.'));
-    process.exit();
-  }
-  isClean = true;
-});
+const porcelain = spawnSync('git', ['status', '--porcelain'], { encoding: 'utf8' });
+if (porcelain.error) {
+  console.log(chalk.red.underline('Error while bumping new version:'));
+  console.log(porcelain.error);
+  process.exit();
+}
+
+const gitStatus = porcelain.stdout.split('\n');
+gitStatus.pop();
+if (gitStatus.length > 0) {
+  console.log(chalk.red.underline('Please, commit all changes before bumping.'));
+  process.exit();
+}
 
 // Trigger the rigth version upgrade
 if (args[0].includes(argument)) {
-  exec('npm version patch', errorHandler);
+  spawnSync('npm', ['version', 'patch', '--no-git-tag-version']);
 } else if (args[1].includes(argument)) {
-  exec('npm version minor', errorHandler);
+  spawnSync('npm', ['version', 'patch', '--no-git-tag-version']);
 } else if (args[2].includes(argument)) {
-  exec('npm version major', errorHandler);
+  spawnSync('npm', ['version', 'patch', '--no-git-tag-version']);
 }
 
 // Handle async with condition to avoid push being trigger before the end of git status
-if (isClean) {
-  exec('git push && git push --tags', errorHandler);
-  // eslint-disable-next-line global-require
-  console.log(`Version successfully bumped to ${require('../package.json').version}`);
+const push = spawnSync('git', ['push'], { encoding: 'utf8' });
+if (push.error) {
+  console.log(chalk.red.underline('Error while pushing version commit:'));
+  console.log(push.error);
   process.exit();
 }
+
+const pushTag = spawnSync('git', ['push', '--tags'], { encoding: 'utf8' });
+if (pushTag.error) {
+  console.log(chalk.red.underline('Error while pushing version tag:'));
+  console.log(porcelain.error);
+  process.exit();
+}
+
+// eslint-disable-next-line global-require
+console.log(`Version successfully bumped to ${require('../package.json').version}`);
+
+process.exit();
