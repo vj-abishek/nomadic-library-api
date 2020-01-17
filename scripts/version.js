@@ -1,3 +1,4 @@
+
 /* eslint-disable no-console */
 const { exec } = require('child_process');
 const chalk = require('chalk');
@@ -11,13 +12,10 @@ const { argv } = process;
 argv.splice(0, 2);
 
 // Handle error for npm version
-function eventHandler(error) {
+function errorHandler(error, _, stderr) {
   if (error) {
-    console.error(error);
-    process.exit(1);
-  } else {
-    // eslint-disable-next-line global-require
-    console.log(`Version successfully bumped to ${require('../package.json').version}`);
+    console.log(chalk.red.underline('Error while bumping new version:'));
+    console.log(stderr);
     process.exit();
   }
 }
@@ -44,20 +42,31 @@ if (args.includes((arg) => arg.includes(argument))) {
 }
 
 // Check if the directory has non-committed changes
+let isClean = false;
 exec('git status --porcelain', (_, stdout) => {
   const gitStatus = stdout.split('\n');
   gitStatus.pop();
   if (gitStatus.length > 0) {
+    isClean = false;
     console.log(chalk.red.underline('Please, commit all changes before bumping.'));
     process.exit();
   }
+  isClean = true;
 });
 
 // Trigger the rigth version upgrade
 if (args[0].includes(argument)) {
-  exec('npm version patch --no-git-tag-version', eventHandler);
+  exec('npm version patch', errorHandler);
 } else if (args[1].includes(argument)) {
-  exec('npm version minor --no-git-tag-version', eventHandler);
+  exec('npm version minor', errorHandler);
 } else if (args[2].includes(argument)) {
-  exec('npm version major --no-git-tag-version', eventHandler);
+  exec('npm version major', errorHandler);
+}
+
+// Handle async with condition to avoid push being trigger before the end of git status
+if (isClean) {
+  exec('git push && git push --tags', errorHandler);
+  // eslint-disable-next-line global-require
+  console.log(`Version successfully bumped to ${require('../package.json').version}`);
+  process.exit();
 }
