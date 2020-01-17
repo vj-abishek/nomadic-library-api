@@ -21,6 +21,12 @@ router.get('/editions', async (ctx) => {
   ctx.body = formatedResults;
 });
 
+router.get('/editions/:id', async (ctx) => {
+  const user = await firestore.collection('editions').doc(ctx.params.id).get();
+
+  ctx.body = { id: user.id, data: user.data() };
+});
+
 router.put('/editions/add', async (ctx) => {
   const validatedUser = editionModel.validate(ctx.request.body);
   if (validatedUser.error) {

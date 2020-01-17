@@ -5,10 +5,10 @@ const editorModel = require('../models/editor');
 
 const router = new Router();
 
-router.get('/editor', async (ctx) => {
+router.get('/editors', async (ctx) => {
   const formatedResults = [];
 
-  const results = await firestore.collection('editor').get();
+  const results = await firestore.collection('editors').get();
   if (results.empty) {
     ctx.status = 204;
     ctx.message = 'No editors in collection';
@@ -21,7 +21,13 @@ router.get('/editor', async (ctx) => {
   ctx.body = formatedResults;
 });
 
-router.put('/editor/add', async (ctx) => {
+router.get('/editors/:id', async (ctx) => {
+  const user = await firestore.collection('editors').doc(ctx.params.id).get();
+
+  ctx.body = { id: user.id, data: user.data() };
+});
+
+router.put('/editors/add', async (ctx) => {
   const validatedUser = editorModel.validate(ctx.request.body);
   if (validatedUser.error) {
     ctx.body = validatedUser.error.name;
@@ -29,11 +35,11 @@ router.put('/editor/add', async (ctx) => {
     return;
   }
 
-  const result = await firestore.collection('editor').add(validatedUser.value);
+  const result = await firestore.collection('editors').add(validatedUser.value);
   ctx.body = result.id;
 });
 
-router.post('/editor/update/:id', async (ctx) => {
+router.post('/editors/update/:id', async (ctx) => {
   const { id } = ctx.params;
 
   const validatedUser = editorModel.validate(ctx.request.body);
@@ -44,7 +50,7 @@ router.post('/editor/update/:id', async (ctx) => {
   }
 
   try {
-    await firestore.collection('editor').doc(id).update(validatedUser.value);
+    await firestore.collection('editors').doc(id).update(validatedUser.value);
     ctx.status = 200;
   } catch (error) {
     if (error.code === 5) {
@@ -56,11 +62,11 @@ router.post('/editor/update/:id', async (ctx) => {
   }
 });
 
-router.delete('/editor/delete/:id', async (ctx) => {
+router.delete('/editors/delete/:id', async (ctx) => {
   const { id } = ctx.params;
 
   try {
-    await firestore.collection('editor').doc(id).delete();
+    await firestore.collection('editors').doc(id).delete();
     ctx.status = 200;
   } catch (error) {
     if (error.code === 5) {
