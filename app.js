@@ -1,11 +1,15 @@
 // Modules import
-const Router = require('@koa/router');
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
 
 // Files import
 const logger = require('./src/lib/logger');
-const user = require('./src/routes/user');
+
+// Routes import
+const users = require('./src/routes/users');
+const books = require('./src/routes/books');
+const editors = require('./src/routes/editors');
+const editions = require('./src/routes/editions');
 
 // App initialization
 if (process.env.NODE_ENV === 'production') {
@@ -13,7 +17,6 @@ if (process.env.NODE_ENV === 'production') {
   require('@google-cloud/trace-agent').start();
 }
 const app = new Koa();
-const router = new Router();
 
 app.listen(8000, () => logger.log({ text: 'API server running on port 8000' }));
 
@@ -26,6 +29,7 @@ app.use(async (ctx, next) => {
 });
 app.use(bodyParser());
 
-app.use(user.routes());
-app.use(router.routes());
-app.use(router.allowedMethods());
+app.use(users.routes());
+app.use(books.routes());
+app.use(editions.routes());
+app.use(editors.routes());
