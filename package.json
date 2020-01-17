@@ -1,6 +1,6 @@
 {
   "name": "nomadic-library-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Api for the \"Nomadic Library\"",
   "main": "app.js",
   "engines": {
