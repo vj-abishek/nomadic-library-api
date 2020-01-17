@@ -21,6 +21,12 @@ router.get('/users', async (ctx) => {
   ctx.body = formatedResults;
 });
 
+router.get('/users/:id', async (ctx) => {
+  const user = await firestore.collection('users').doc(ctx.params.id).get();
+
+  ctx.body = { id: user.id, data: user.data() };
+});
+
 router.put('/users/add', async (ctx) => {
   const validatedUser = userModel.validate(ctx.request.body);
   if (validatedUser.error) {
