@@ -1,9 +1,11 @@
 // Modules import
 const Router = require('@koa/router');
 const Koa = require('koa');
+const bodyParser = require('koa-bodyparser');
 
 // Files import
 const logger = require('./src/lib/logger');
+const user = require('./src/routes/user');
 
 // App initialization
 if (process.env.NODE_ENV === 'production') {
@@ -22,6 +24,8 @@ app.use(async (ctx, next) => {
   // eslint-disable-next-line no-console
   console.log(`-- ${ctx.method} -- "${ctx.url}" -- ${ms}ms`);
 });
+app.use(bodyParser());
 
+app.use(user.routes());
 app.use(router.routes());
 app.use(router.allowedMethods());
