@@ -49,11 +49,11 @@ if (gitStatus.length > 0) {
 
 // Trigger the rigth version upgrade
 if (args[0].includes(argument)) {
-  spawnSync('npm', ['version', 'patch', '--no-git-tag-version']);
+  spawnSync('npm', ['version', 'patch']);
 } else if (args[1].includes(argument)) {
-  spawnSync('npm', ['version', 'patch', '--no-git-tag-version']);
+  spawnSync('npm', ['version', 'minor']);
 } else if (args[2].includes(argument)) {
-  spawnSync('npm', ['version', 'patch', '--no-git-tag-version']);
+  spawnSync('npm', ['version', 'major']);
 }
 
 // Handle async with condition to avoid push being trigger before the end of git status
