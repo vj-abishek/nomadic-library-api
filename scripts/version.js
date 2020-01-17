@@ -55,9 +55,9 @@ exec('git status --porcelain', (_, stdout) => {
 
 // Trigger the rigth version upgrade
 if (args[0].includes(argument)) {
-  exec('npm version patch --git-tag-version', eventHandler);
+  exec('npm version patch --no-git-tag-version', eventHandler);
 } else if (args[1].includes(argument)) {
-  exec('npm version minor --git-tag-version', eventHandler);
+  exec('npm version minor --no-git-tag-version', eventHandler);
 } else if (args[2].includes(argument)) {
-  exec('npm version major --git-tag-version', eventHandler);
+  exec('npm version major --no-git-tag-version', eventHandler);
 }
